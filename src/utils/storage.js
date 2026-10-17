@@ -1,4 +1,4 @@
-import { generateCard } from "./bingoCore";
+import { generateCard, GAME_MODES } from "./bingoCore";
 
 const STORAGE_KEY = "bingo_control_moderno_v1";
 
@@ -18,7 +18,7 @@ export function getInitialBingoState() {
   return {
     cartones: initialCards,
     llamadas: [], // [{ letter: 'G', number: 53, callKey: 'G53' }]
-    modo: "linea", // "linea" | "lleno"
+    modo: "linea", // "linea" | "lleno" | "l" | "o" | "primeros5" | "primeros10"
     siguienteControl: 13,
   };
 }
@@ -35,10 +35,11 @@ export function loadBingoState() {
     if (!Array.isArray(parsed.cartones)) {
       throw new Error("Datos corruptos.");
     }
+    const validModes = Object.keys(GAME_MODES);
     return {
       cartones: parsed.cartones || [],
       llamadas: parsed.llamadas || [],
-      modo: parsed.modo === "lleno" ? "lleno" : "linea",
+      modo: validModes.includes(parsed.modo) ? parsed.modo : "linea",
       siguienteControl: parsed.siguienteControl || (parsed.cartones.length + 1),
     };
   } catch (err) {
@@ -71,10 +72,11 @@ export function parseBackupFile(jsonString) {
   if (!Array.isArray(data.cartones)) {
     throw new Error("El archivo no tiene el formato válido de respaldo de Bingo Control.");
   }
+  const validModes = Object.keys(GAME_MODES);
   return {
     cartones: data.cartones,
     llamadas: Array.isArray(data.llamadas) ? data.llamadas : [],
-    modo: data.modo === "lleno" ? "lleno" : "linea",
+    modo: validModes.includes(data.modo) ? data.modo : "linea",
     siguienteControl: data.siguienteControl || data.cartones.length + 1,
   };
 }

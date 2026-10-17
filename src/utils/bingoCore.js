@@ -166,18 +166,110 @@ export function calculateMarks(numbers, calledSet, active = true) {
   return board;
 }
 
+export const GAME_MODES = {
+  linea: {
+    id: "linea",
+    name: "Una Línea",
+    desc: "Cualquier fila, columna o diagonal",
+  },
+  lleno: {
+    id: "lleno",
+    name: "Cartón Lleno",
+    desc: "Los 24 números del cartón marcados",
+  },
+  l: {
+    id: "l",
+    name: "En L",
+    desc: "Columna B y fila 5 (o en cualquier esquina)",
+  },
+  o: {
+    id: "o",
+    name: "En O (Lados)",
+    desc: "Todas las casillas de los 4 lados exteriores",
+  },
+  primeros5: {
+    id: "primeros5",
+    name: "Primeros 5 Números",
+    desc: "5 números cualesquiera marcados en el cartón",
+  },
+  primeros10: {
+    id: "primeros10",
+    name: "Primeros 10 Números",
+    desc: "10 números cualesquiera marcados en el cartón",
+  },
+};
+
 /**
- * Determina los patrones ganadores según modalidad ("linea" o "lleno")
+ * Determina los patrones ganadores según modalidad:
+ * "linea", "lleno", "l", "o", "primeros5", "primeros10"
  */
 export function getWinningPatterns(numbers, calledSet, active = true, mode = "linea") {
   if (!active) return [];
   const board = calculateMarks(numbers, calledSet, true);
 
+  // Modalidad: Cartón Lleno
   if (mode === "lleno") {
     const isFull = board.every(row => row.every(cell => cell === true));
     return isFull ? ["Cartón lleno"] : [];
   }
 
+  // Modalidad: En L (Columna y fila coincidiendo en esquina)
+  if (mode === "l") {
+    const patterns = [];
+    const colB = board.every(row => row[0]);
+    const colO = board.every(row => row[4]);
+    const row1 = board[0].every(Boolean);
+    const row5 = board[4].every(Boolean);
+
+    // L Tradicional (Columna B + Fila 5)
+    if (colB && row5) patterns.push("Figura en L (Col B + Fila 5)");
+    // L Invertida (Columna O + Fila 5)
+    if (colO && row5) patterns.push("Figura en L (Col O + Fila 5)");
+    // L Superior Izquierda (Columna B + Fila 1)
+    if (colB && row1) patterns.push("Figura en L (Col B + Fila 1)");
+    // L Superior Derecha (Columna O + Fila 1)
+    if (colO && row1) patterns.push("Figura en L (Col O + Fila 1)");
+
+    return patterns;
+  }
+
+  // Modalidad: En O (todas las casillas de los lados / marco exterior)
+  if (mode === "o") {
+    let isOuterRingFull = true;
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        if (r === 0 || r === 4 || c === 0 || c === 4) {
+          if (!board[r][c]) {
+            isOuterRingFull = false;
+            break;
+          }
+        }
+      }
+      if (!isOuterRingFull) break;
+    }
+    return isOuterRingFull ? ["Figura en O (Marco Exterior)"] : [];
+  }
+
+  // Contar números llamados marcados (excluyendo el centro libre 2,2)
+  let markedCount = 0;
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      if (r === 2 && c === 2) continue; // centro libre
+      if (board[r][c]) markedCount++;
+    }
+  }
+
+  // Modalidad: Primeros 5 números
+  if (mode === "primeros5") {
+    return markedCount >= 5 ? [`Primeros 5 números (${markedCount}/24 marcados)`] : [];
+  }
+
+  // Modalidad: Primeros 10 números
+  if (mode === "primeros10") {
+    return markedCount >= 10 ? [`Primeros 10 números (${markedCount}/24 marcados)`] : [];
+  }
+
+  // Modalidad por defecto: Una Línea (Fila, Columna o Diagonal)
   const results = [];
   // Filas
   for (let r = 0; r < 5; r++) {

@@ -55,6 +55,27 @@ class RuleTests(unittest.TestCase):
         calls.pop()
         self.assertEqual(winning_patterns(SAMPLE, calls, mode="lleno"), [])
 
+    def test_new_game_modes_l_o_counts(self):
+        # L pattern (Col B + Row 5)
+        calls_l = {("B", SAMPLE[r][0]) for r in range(5)} | {("BINGO"[c], SAMPLE[4][c]) for c in range(5)}
+        self.assertIn("Figura en L (Col B + Fila 5)", winning_patterns(SAMPLE, calls_l, mode="l"))
+        
+        # O pattern (Outer ring)
+        calls_o = {("BINGO"[c], SAMPLE[r][c]) for r in range(5) for c in range(5)
+                   if (r in (0, 4) or c in (0, 4))}
+        self.assertEqual(winning_patterns(SAMPLE, calls_o, mode="o"), ["Figura en O (Marco Exterior)"])
+        
+        # Primeros 5 y 10
+        cells = [(r, c) for r in range(5) for c in range(5) if (r, c) != (2, 2)]
+        calls_4 = {("BINGO"[c], SAMPLE[r][c]) for r, c in cells[:4]}
+        calls_5 = {("BINGO"[c], SAMPLE[r][c]) for r, c in cells[:5]}
+        calls_10 = {("BINGO"[c], SAMPLE[r][c]) for r, c in cells[:10]}
+        
+        self.assertEqual(winning_patterns(SAMPLE, calls_4, mode="primeros5"), [])
+        self.assertTrue(any("Primeros 5 números" in p for p in winning_patterns(SAMPLE, calls_5, mode="primeros5")))
+        self.assertEqual(winning_patterns(SAMPLE, calls_5, mode="primeros10"), [])
+        self.assertTrue(any("Primeros 10 números" in p for p in winning_patterns(SAMPLE, calls_10, mode="primeros10")))
+
 
 class RepositoryTests(unittest.TestCase):
     def setUp(self):

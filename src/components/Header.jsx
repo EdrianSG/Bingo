@@ -11,6 +11,7 @@ import {
   Trophy
 } from "lucide-react";
 import { exportBackup, parseBackupFile } from "../utils/storage";
+import { GAME_MODES } from "../utils/bingoCore";
 
 export function Header({
   mode,
@@ -69,20 +70,23 @@ export function Header({
           </button>
         )}
 
-        {/* Modalidad */}
-        <div className="mode-selector">
-          <button
-            className={`mode-btn ${mode === "linea" ? "active" : ""}`}
-            onClick={() => setMode("linea")}
+        {/* Modalidad de Juego */}
+        <div className="mode-selector-wrapper" title={GAME_MODES[mode]?.desc || "Modalidad de juego"}>
+          <div className="mode-selector-icon">
+            <Trophy size={14} />
+          </div>
+          <select
+            className="mode-dropdown-select"
+            value={mode}
+            onChange={(e) => setMode(e.target.value)}
+            aria-label="Seleccionar modalidad de juego"
           >
-            Una Línea
-          </button>
-          <button
-            className={`mode-btn ${mode === "lleno" ? "active" : ""}`}
-            onClick={() => setMode("lleno")}
-          >
-            Cartón Lleno
-          </button>
+            {Object.values(GAME_MODES).map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Botones de acción */}

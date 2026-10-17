@@ -63,7 +63,7 @@ class Repository:
             return db.execute("SELECT valor FROM ajustes WHERE clave='modo'").fetchone()[0]
 
     def set_mode(self, mode):
-        if mode not in ("linea", "lleno"):
+        if mode not in ("linea", "lleno", "l", "o", "primeros5", "primeros10"):
             raise ValueError("Modalidad inválida.")
         with self.connect() as db:
             db.execute("UPDATE ajustes SET valor=? WHERE clave='modo'", (mode,))

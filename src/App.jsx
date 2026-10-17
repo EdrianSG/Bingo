@@ -12,7 +12,8 @@ import {
   parseCall,
   getWinningPatterns,
   generateCard,
-  LETTERS
+  LETTERS,
+  GAME_MODES
 } from "./utils/bingoCore";
 import { loadBingoState, saveBingoState } from "./utils/storage";
 import { playCallSound, playBingoFanfare, playUndoSound } from "./utils/sound";
@@ -200,9 +201,11 @@ export default function App() {
       ...prev,
       modo: newMode
     }));
+    const modeName = GAME_MODES[newMode]?.name || newMode;
+    const modeDesc = GAME_MODES[newMode]?.desc || "";
     setFeedback({
       type: "info",
-      message: `Modalidad cambiada a: ${newMode === "linea" ? "Una Línea" : "Cartón Lleno"}. Ganadores recalculados.`
+      message: `Modalidad cambiada a: ${modeName} (${modeDesc}). Ganadores recalculados.`
     });
   };
 

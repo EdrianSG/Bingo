@@ -58,7 +58,11 @@ class BingoApp:
         self.history = text("Sin números llamados.", color=MUTED)
         self.mode_select = ft.Dropdown(label="Modalidad", value=self.mode, width=230,
                                       options=[ft.DropdownOption("linea", "Una línea"),
-                                               ft.DropdownOption("lleno", "Cartón lleno")],
+                                               ft.DropdownOption("lleno", "Cartón lleno"),
+                                               ft.DropdownOption("l", "En L"),
+                                               ft.DropdownOption("o", "En O (Lados)"),
+                                               ft.DropdownOption("primeros5", "Primeros 5 números"),
+                                               ft.DropdownOption("primeros10", "Primeros 10 números")],
                                       on_select=self.change_mode, border_radius=12)
         game = panel(ft.Column([
             text("CONTROL DEL JUEGO", 12, MUTED, True),

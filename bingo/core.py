@@ -69,6 +69,25 @@ def winning_patterns(numbers, called, active=True, mode="linea"):
     board = marks(numbers, called)
     if mode == "lleno":
         return ["Cartón lleno"] if all(all(row) for row in board) else []
+    if mode == "l":
+        patterns = []
+        col_b = all(board[r][0] for r in range(5))
+        col_o = all(board[r][4] for r in range(5))
+        row_1 = all(board[0])
+        row_5 = all(board[4])
+        if col_b and row_5: patterns.append("Figura en L (Col B + Fila 5)")
+        if col_o and row_5: patterns.append("Figura en L (Col O + Fila 5)")
+        if col_b and row_1: patterns.append("Figura en L (Col B + Fila 1)")
+        if col_o and row_1: patterns.append("Figura en L (Col O + Fila 1)")
+        return patterns
+    if mode == "o":
+        is_o = all(board[r][c] for r in range(5) for c in range(5) if r in (0, 4) or c in (0, 4))
+        return ["Figura en O (Marco Exterior)"] if is_o else []
+    marked = sum(board[r][c] for r in range(5) for c in range(5) if (r, c) != (2, 2))
+    if mode == "primeros5":
+        return [f"Primeros 5 números ({marked}/24 marcados)"] if marked >= 5 else []
+    if mode == "primeros10":
+        return [f"Primeros 10 números ({marked}/24 marcados)"] if marked >= 10 else []
     result = []
     for r in range(5):
         if all(board[r]):
