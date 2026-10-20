@@ -13,7 +13,8 @@ import {
   getWinningPatterns,
   generateCard,
   LETTERS,
-  GAME_MODES
+  GAME_MODES,
+  isCellEligible
 } from "./utils/bingoCore";
 import { loadBingoState, saveBingoState } from "./utils/storage";
 import { playCallSound, playBingoFanfare, playUndoSound } from "./utils/sound";
@@ -89,13 +90,14 @@ export default function App() {
         return;
       }
 
-      // Cuántos cartones activos tienen este número
+      // Cuántos cartones activos tienen este número en casillas válidas
       const colIndex = LETTERS.indexOf(parsed.letter);
       let matchCount = 0;
       for (const card of gameState.cartones) {
         if (!card.activo) continue;
         for (let r = 0; r < 5; r++) {
           if (r === 2 && colIndex === 2) continue; // centro libre
+          if (!isCellEligible(r, colIndex, gameState.modo)) continue;
           if (card.numbers[r][colIndex] === parsed.number) {
             matchCount++;
             break;

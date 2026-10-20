@@ -58,28 +58,33 @@ def generate_card():
     return result
 
 
-def marks(numbers, called, active=True):
-    return [[(r, c) == (2, 2) or (active and (LETTERS[c], numbers[r][c]) in called)
-             for c in range(5)] for r in range(5)]
+def is_cell_eligible(r, c, mode="linea"):
+    if mode == "l":
+        return c == 0 or r == 4
+    if mode == "o":
+        return r in (0, 4) or c in (0, 4)
+    return True
+
+
+def marks(numbers, called, active=True, mode="linea"):
+    return [[
+        is_cell_eligible(r, c, mode) and (
+            (r, c) == (2, 2) or (active and (LETTERS[c], numbers[r][c]) in called)
+        )
+        for c in range(5)
+    ] for r in range(5)]
 
 
 def winning_patterns(numbers, called, active=True, mode="linea"):
     if not active:
         return []
-    board = marks(numbers, called)
+    board = marks(numbers, called, active, mode)
     if mode == "lleno":
         return ["Cartón lleno"] if all(all(row) for row in board) else []
     if mode == "l":
-        patterns = []
         col_b = all(board[r][0] for r in range(5))
-        col_o = all(board[r][4] for r in range(5))
-        row_1 = all(board[0])
         row_5 = all(board[4])
-        if col_b and row_5: patterns.append("Figura en L (Col B + Fila 5)")
-        if col_o and row_5: patterns.append("Figura en L (Col O + Fila 5)")
-        if col_b and row_1: patterns.append("Figura en L (Col B + Fila 1)")
-        if col_o and row_1: patterns.append("Figura en L (Col O + Fila 1)")
-        return patterns
+        return ["Figura en L (Col B + Fila 5)"] if (col_b and row_5) else []
     if mode == "o":
         is_o = all(board[r][c] for r in range(5) for c in range(5) if r in (0, 4) or c in (0, 4))
         return ["Figura en O (Marco Exterior)"] if is_o else []

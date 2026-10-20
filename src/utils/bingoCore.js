@@ -142,18 +142,42 @@ export function validateCard(numbers) {
 }
 
 /**
+/**
+ * Determina si una casilla (r, c) forma parte de la figura válida del modo actual
+ */
+export function isCellEligible(r, c, mode = "linea") {
+  if (mode === "l") {
+    // Solo columna B (c === 0) y fila inferior (r === 4)
+    return c === 0 || r === 4;
+  }
+  if (mode === "o") {
+    // Solo marco exterior (todas las casillas de los 4 lados)
+    return r === 0 || r === 4 || c === 0 || c === 4;
+  }
+  // En linea, lleno, primeros5, primeros10, todas las casillas son válidas
+  return true;
+}
+
+/**
  * Calcula matriz booleana 5x5 de celdas marcadas
+ * Si una celda NO es válida para el modo actual, NO se marca!
  * @param {number[][]} numbers Matriz 5x5
  * @param {Set<string>} calledSet Conjunto de strings "G53", "B1", etc.
  * @param {boolean} active Si el cartón está activo
+ * @param {string} mode Modalidad actual de juego
  */
-export function calculateMarks(numbers, calledSet, active = true) {
+export function calculateMarks(numbers, calledSet, active = true, mode = "linea") {
   const board = [];
   for (let r = 0; r < 5; r++) {
     const row = [];
     for (let c = 0; c < 5; c++) {
-      if (r === 2 && c === 2) {
-        row.push(true); // Centro siempre marcado
+      const eligible = isCellEligible(r, c, mode);
+      if (!eligible) {
+        // No es válida en este modo, no se llena
+        row.push(false);
+      } else if (r === 2 && c === 2) {
+        // Centro libre solo cuenta si es elegible
+        row.push(true);
       } else if (!active) {
         row.push(false);
       } else {
@@ -171,31 +195,37 @@ export const GAME_MODES = {
     id: "linea",
     name: "Una Línea",
     desc: "Cualquier fila, columna o diagonal",
+    targetCount: 5,
   },
   lleno: {
     id: "lleno",
     name: "Cartón Lleno",
     desc: "Los 24 números del cartón marcados",
+    targetCount: 24,
   },
   l: {
     id: "l",
     name: "En L",
-    desc: "Columna B y fila 5 (o en cualquier esquina)",
+    desc: "Columna B y fila inferior (9 casillas)",
+    targetCount: 9,
   },
   o: {
     id: "o",
     name: "En O (Lados)",
-    desc: "Todas las casillas de los 4 lados exteriores",
+    desc: "Todas las casillas de los lados exteriores (16 casillas)",
+    targetCount: 16,
   },
   primeros5: {
     id: "primeros5",
     name: "Primeros 5 Números",
     desc: "5 números cualesquiera marcados en el cartón",
+    targetCount: 5,
   },
   primeros10: {
     id: "primeros10",
     name: "Primeros 10 Números",
     desc: "10 números cualesquiera marcados en el cartón",
+    targetCount: 10,
   },
 };
 
@@ -205,7 +235,7 @@ export const GAME_MODES = {
  */
 export function getWinningPatterns(numbers, calledSet, active = true, mode = "linea") {
   if (!active) return [];
-  const board = calculateMarks(numbers, calledSet, true);
+  const board = calculateMarks(numbers, calledSet, true, mode);
 
   // Modalidad: Cartón Lleno
   if (mode === "lleno") {
@@ -213,24 +243,14 @@ export function getWinningPatterns(numbers, calledSet, active = true, mode = "li
     return isFull ? ["Cartón lleno"] : [];
   }
 
-  // Modalidad: En L (Columna y fila coincidiendo en esquina)
+  // Modalidad: En L (ESTRICTO: Solo Columna B y Fila inferior 5)
   if (mode === "l") {
-    const patterns = [];
     const colB = board.every(row => row[0]);
-    const colO = board.every(row => row[4]);
-    const row1 = board[0].every(Boolean);
     const row5 = board[4].every(Boolean);
-
-    // L Tradicional (Columna B + Fila 5)
-    if (colB && row5) patterns.push("Figura en L (Col B + Fila 5)");
-    // L Invertida (Columna O + Fila 5)
-    if (colO && row5) patterns.push("Figura en L (Col O + Fila 5)");
-    // L Superior Izquierda (Columna B + Fila 1)
-    if (colB && row1) patterns.push("Figura en L (Col B + Fila 1)");
-    // L Superior Derecha (Columna O + Fila 1)
-    if (colO && row1) patterns.push("Figura en L (Col O + Fila 1)");
-
-    return patterns;
+    if (colB && row5) {
+      return ["Figura en L (Col B + Fila 5)"];
+    }
+    return [];
   }
 
   // Modalidad: En O (todas las casillas de los lados / marco exterior)

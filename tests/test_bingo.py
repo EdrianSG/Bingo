@@ -58,7 +58,15 @@ class RuleTests(unittest.TestCase):
     def test_new_game_modes_l_o_counts(self):
         # L pattern (Col B + Row 5)
         calls_l = {("B", SAMPLE[r][0]) for r in range(5)} | {("BINGO"[c], SAMPLE[4][c]) for c in range(5)}
-        self.assertIn("Figura en L (Col B + Fila 5)", winning_patterns(SAMPLE, calls_l, mode="l"))
+        self.assertEqual(winning_patterns(SAMPLE, calls_l, mode="l"), ["Figura en L (Col B + Fila 5)"])
+        # Non-L numbers must NOT be marked in mode 'l'
+        calls_all = {("BINGO"[c], SAMPLE[r][c]) for r in range(5) for c in range(5) if (r, c) != (2, 2)}
+        marks_l = marks(SAMPLE, calls_all, mode="l")
+        self.assertFalse(marks_l[1][1]) # inside cell must be False
+        self.assertFalse(marks_l[2][2]) # center not in L, must be False
+        # Inverted L (Col O + Row 5) must NOT win in mode 'l'
+        calls_inv = {("O", SAMPLE[r][4]) for r in range(5)} | {("BINGO"[c], SAMPLE[4][c]) for c in range(5)}
+        self.assertEqual(winning_patterns(SAMPLE, calls_inv, mode="l"), [])
         
         # O pattern (Outer ring)
         calls_o = {("BINGO"[c], SAMPLE[r][c]) for r in range(5) for c in range(5)

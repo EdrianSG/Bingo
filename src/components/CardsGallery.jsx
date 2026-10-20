@@ -9,7 +9,7 @@ import {
   SlidersHorizontal,
   X
 } from "lucide-react";
-import { LETTERS, calculateMarks } from "../utils/bingoCore";
+import { LETTERS, calculateMarks, isCellEligible, GAME_MODES } from "../utils/bingoCore";
 
 const PAGE_SIZE = 24;
 
@@ -119,6 +119,10 @@ export function CardsGallery({
             </select>
           </div>
 
+          <div className="active-mode-badge" title={GAME_MODES[mode]?.desc || ""}>
+            <span>Modo: {GAME_MODES[mode]?.name || mode}</span>
+          </div>
+
           {(searchTerm || statusFilter !== "todos") && (
             <button
               type="button"
@@ -158,15 +162,27 @@ export function CardsGallery({
           {paginatedCards.map((card) => {
             const isWinner = Boolean(winnersMap[card.id]);
             const winPatterns = winnersMap[card.id] || [];
-            const marksBoard = calculateMarks(card.numbers, calledKeys, card.activo);
+            const marksBoard = calculateMarks(card.numbers, calledKeys, card.activo, mode);
 
-            // Contar marcados (excluyendo el centro libre)
+            // Contar marcados elegibles (excluyendo centro libre)
             let markedCount = 0;
             for (let r = 0; r < 5; r++) {
               for (let c = 0; c < 5; c++) {
                 if (r === 2 && c === 2) continue;
                 if (marksBoard[r][c]) markedCount++;
               }
+            }
+
+            // Etiqueta del contador según la modalidad
+            let counterLabel = `${markedCount} / 24 marcados`;
+            if (mode === "l") {
+              counterLabel = `${markedCount} / 9 en L`;
+            } else if (mode === "o") {
+              counterLabel = `${markedCount} / 16 en O`;
+            } else if (mode === "primeros5") {
+              counterLabel = `${markedCount} / 5 marcados`;
+            } else if (mode === "primeros10") {
+              counterLabel = `${markedCount} / 10 marcados`;
             }
 
             return (
@@ -205,14 +221,15 @@ export function CardsGallery({
                     <div key={`row-${r}`} className="matrix-row">
                       {row.map((val, c) => {
                         const isCenter = r === 2 && c === 2;
+                        const isEligible = isCellEligible(r, c, mode);
                         const isMarked = marksBoard[r][c];
 
                         if (isCenter) {
                           return (
                             <div
                               key={`cell-${r}-${c}`}
-                              className="matrix-cell cell-center"
-                              title={`Casilla Libre · Control: ${card.control}`}
+                              className={`matrix-cell cell-center ${!isEligible ? "cell-ineligible" : ""}`}
+                              title={isEligible ? `Casilla Libre · Control: ${card.control}` : `Control: ${card.control} (No aplica en este modo)`}
                             >
                               <span className="center-label">LIBRE</span>
                               <span className="center-control">{card.control}</span>
@@ -223,8 +240,8 @@ export function CardsGallery({
                         return (
                           <div
                             key={`cell-${r}-${c}`}
-                            className={`matrix-cell ${isMarked ? "cell-marked" : ""}`}
-                            title={`${LETTERS[c]}${val} ${isMarked ? "(Marcado)" : ""}`}
+                            className={`matrix-cell ${isMarked ? "cell-marked" : ""} ${!isEligible ? "cell-ineligible" : ""}`}
+                            title={`${LETTERS[c]}${val} ${isMarked ? "(Marcado)" : !isEligible ? "(No aplica en este modo)" : ""}`}
                           >
                             {val}
                           </div>
@@ -237,7 +254,7 @@ export function CardsGallery({
                 {/* Resumen de aciertos y patrones */}
                 <div className="card-footer-info">
                   <span className="marked-counter">
-                    {markedCount} / 24 marcados
+                    {counterLabel}
                   </span>
                   {isWinner && (
                     <span className="winning-pattern-tag" title={winPatterns.join(", ")}>

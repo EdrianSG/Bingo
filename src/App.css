@@ -946,6 +946,36 @@
   max-width: 100%;
 }
 
+/* Casillas no elegibles / fuera del patrón de juego */
+.matrix-cell.cell-ineligible {
+  opacity: 0.22;
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  filter: grayscale(1);
+}
+
+[data-theme="light"] .matrix-cell.cell-ineligible {
+  opacity: 0.3;
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.04);
+  color: var(--text-dim);
+  filter: grayscale(1);
+}
+
+.active-mode-badge {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(13, 148, 136, 0.15);
+  border: 1px solid var(--border-active);
+  color: var(--primary-light);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 /* Card Footer */
 .card-footer-info {
   display: flex;
